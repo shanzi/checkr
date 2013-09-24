@@ -1,0 +1,16 @@
+SENDER={
+        'server':'smtp.sample.com',
+        'ssl':False
+        }
+
+RECEIVER={
+        'server':'imap.sample.com',
+        'ssl':False
+        }
+
+ACCOUNT={
+        'username':'yourname',
+        'password':'yourpassword'}
+
+DEFAULT_SENDER='yourname@sample.com'
+IGNORED_EMAILS=[],
