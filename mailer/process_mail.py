@@ -18,6 +18,17 @@ from mailer import rarfile
 ASSIGNMENT_RE = re.compile(r'^"?(\d{10})[-_](\d+)\.(zip|rar)"?$')
 FILE_EXT_RE = re.compile(r'\.(h|cpp|cxx|c|txt)$')
 
+def _unicode(str_, encoding_list):
+    if isinstance(str_, unicode): return str_
+    for encoding in encoding_list:
+        try:
+            return unicode(str_, encoding)
+        except UnicodeDecodeError as e:
+            continue
+
+    return unicode(str_)
+
+
 class Result(object):
     def __init__(self, uid, message):
         self.attachment = False
@@ -64,10 +75,7 @@ class Result(object):
             files = self._rar_files()
         for fname, content in files:
             if FILE_EXT_RE.search(fname):
-                try:
-                    content = unicode(content, 'utf-8')
-                except Exception as e:
-                    content = unicode(content, 'gbk')
+                content = _unicode(content, ['utf-8', 'gbk'])
             else:
                 content = '[No Preview]'
             file_obj = File()
@@ -83,6 +91,7 @@ class Result(object):
         submission = Submission()
         submission.student = student
         submission.assignment = assignment
+        submission.score = 2
         submission.save()
 
         self._save_email(submission)
@@ -140,9 +149,12 @@ def _is_homework(message):
     if not message.attachments:
         return False
 
-    subject = message.subject
+    subject = _unicode(message.subject, ['utf-8', 'gbk'])
     content = message.body['plain'] or message.body['html']
-    content = content[0]
+    if content: 
+        content = _unicode(content[0], ['utf-8', 'gbk'])
+    else:
+        content = u''
 
     score = 1
 
@@ -152,8 +164,10 @@ def _is_homework(message):
     if content.find('数据结构'.decode('utf-8')) >= 0: score *= 0.8
     if message.attachments: 
         attachment = message.attachments[0]
-        filename = attachment['filename']
-        if ASSIGNMENT_RE.match(filename): score *= 0.4
+        if attachment:
+            filename = attachment['filename']
+            if ASSIGNMENT_RE.match(filename): score *= 0.4
+
 
     return score < 0.5
 
@@ -180,6 +194,7 @@ def process_mail():
         date_str = date.strftime('%d-%b-%Y')
         for uid, message in receiver.messages(folder=settings.DEFAULT_MAILBOX,
                 date__gt=date_str):
+            print "processing:(%s) %s" % (uid, message.subject)
             if not _is_homework(message): continue 
 
             res = _process_message(uid, message)
@@ -189,6 +204,7 @@ def process_mail():
             res = _process_message(uid, message)
             results.append(res)
 
+        receiver.connection.select()
         for result in results:
             ok = result.submit()
             if ok: receiver.move(result.uid, settings.PROCESSED_MAILBOX)

@@ -33,16 +33,14 @@ class Imbox(object):
     def fetch_by_uid(self, uid):
         message, data = self.connection.uid('fetch', uid, '(BODY.PEEK[])') # Don't mark the messages as read, save bandwidth with PEEK
         raw_email = data[0][1]
-
         email_object = parse_email(raw_email)
-
         return email_object
 
     def fetch_list(self, **kwargs):
         uid_list = self.query_uids(**kwargs)
 
         for uid in uid_list:
-            yield (uid, self.fetch_by_uid(uid))
+            yield ( uid, self.fetch_by_uid(uid))
 
     def mark_seen(self, uid):
         self.connection.uid('STORE', uid, '+FLAGS', '\\Seen')

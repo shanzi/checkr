@@ -8,7 +8,7 @@ from assignment.models import Assignment
 
 class Submission(models.Model):
     student = models.ForeignKey(Student, related_name="submissions")
-    assignment = models.ForeignKey(Assignment, related_name="assignments")
+    assignment = models.ForeignKey(Assignment, related_name="submissions")
     score = models.DecimalField(max_digits=5, decimal_places=1, default=5)
     cpplint_result = models.TextField()
 
