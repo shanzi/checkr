@@ -14,3 +14,7 @@ ACCOUNT={
 
 DEFAULT_SENDER='yourname@sample.com'
 IGNORED_EMAILS=[],
+
+DEFAULT_MAILBOX = 'Inbox'
+WAIT_MAILBOX = 'wait_folder'
+PROCESSED_MAILBOX = 'processed_folder'

@@ -39,3 +39,4 @@ nosetests.xml
 # Project specified
 *.db
 mailer/mail_settings.py
+*.swp

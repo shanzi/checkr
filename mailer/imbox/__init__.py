@@ -1,6 +1,6 @@
-from imbox.imap import ImapTransport
-from imbox.parser import parse_email
-from imbox.query import build_search_query
+from mailer.imbox.imap import ImapTransport
+from mailer.imbox.parser import parse_email
+from mailer.imbox.query import build_search_query
 
 class Imbox(object):
 
