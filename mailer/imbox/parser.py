@@ -52,7 +52,7 @@ def decode_param(param):
     values = v.split('\n')
     value_results = []
     for value in values:
-        match = re.search(r'=\?(\w+)\?(Q|B)\?(.+)\?=', v)
+        match = re.search(r'=\?(\w+)\?(Q|B)\?(.+)\?=', value)
         if match:
             encoding, type_, code = match.groups()
             if type_ == 'Q':

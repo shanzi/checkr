@@ -1,0 +1,50 @@
+{% extends "base.html" %} 
+
+{% block extend_head %}
+   <style>
+        .tip {
+            background:#97D7AE;
+            border:solid 1px #7FB593;
+            padding: 5px;
+            margin: 9px 0;
+        }
+
+        .errorlist {
+            background:#DA797D;
+            border:solid 1px #955355;
+            border-bottom: none;
+            padding: 3px;
+            margin-top: 8px;
+            margin-bottom: 0;
+        }
+
+        .errorlist li{
+            list-style: none;
+            margin:0;
+        }
+
+        form p {
+            border: solid 1px #eee;
+            padding: 2px;
+            margin: 0 0 8px 0;
+        }
+        
+        form label, form input, form select {
+            display:inline-block;
+            width:40%;
+        }
+   </style>
+{% endblock extend_head %}
+
+{% block content %}
+{% if tip %}
+<div class="tip">
+    {{ tip }}
+</div>
+{% endif %}
+<form action="" method="POST" accept-charset="utf-8">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <p><input type="submit"></p>
+</form> 
+{% endblock content %}

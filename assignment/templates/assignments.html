@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block extend_head %}
+   <style type="text/css" media="screen">
+    .item {
+        background: #EEE;
+        margin: 1px 0 0 0;
+        padding: 2px;
+    }
+    .detail {
+        font-size: small;
+        color:#999;
+        background: #ccc;
+        margin: 0 0 2px 0;
+        text-align: center;
+    }
+       
+   </style> 
+{% endblock extend_head %}
+
+{% block content %}
+{% for assignment in assignments %}
+<div class="item">
+    <h3>
+        <a href="{{ assignment.sequence }}">{{ assignment.title }}</a>
+    </h3>
+</div>
+<div class="detail">
+    {{ assignment.submissions_count }} / {{ student_count }}
+</div>
+{% empty %}
+<div class="info">
+    No Assignments
+</div>
+{% endfor %}
+
+{% endblock content %}

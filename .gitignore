@@ -40,3 +40,4 @@ nosetests.xml
 *.db
 mailer/mail_settings.py
 *.swp
+namelist.py

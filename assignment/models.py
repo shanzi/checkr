@@ -2,7 +2,6 @@
 # encoding: utf-8
 
 from django.db import models
-
 # Create your models here.
 
 seq_descriptions = [
@@ -39,3 +38,6 @@ class Assignment(models.Model):
 
     def __unicode__(self):
         return self.title
+
+    def submissions_count(self):
+        return  self.submissions.count()

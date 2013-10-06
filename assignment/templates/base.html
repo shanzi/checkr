@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>checkr | {{ title }}</title>
+    <style type="text/css" media="screen">
+    html { background:#C3EFF0; }
+    h1, h3 {
+        margin: 0.2em;
+    }
+    a {
+        text-decoration: None;
+        color:#69f;
+    }
+    .mainheader{
+        text-transform:uppercase;
+    }
+    .main {
+        width:480px;
+        border: solid 3px #ccc;
+        padding: 5px;
+        margin: 0 auto;
+        background:#fff;
+    }
+    .info {
+        background:#8CB6F0;
+        border:solid 1px #7DA3D7;
+        padding: 5px;
+        color: #fff;
+    }
+    </style>
+    {% block extend_head %}
+    {% endblock extend_head %}
+</head>
+<body>
+    <div class="main">
+        <h1 class="mainheader">
+            {{ title }}
+        </h1>
+        <hr>
+        <div class="content">
+            {% block content %}
+                
+            {% endblock content %}
+        </div>
+    </div>
+</body>
+</html>
