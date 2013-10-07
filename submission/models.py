@@ -10,6 +10,7 @@ class Submission(models.Model):
     student = models.ForeignKey(Student, related_name="submissions")
     assignment = models.ForeignKey(Assignment, related_name="submissions")
     score = models.DecimalField(max_digits=5, decimal_places=1, default=5)
+    updated_at = models.DateTimeField()
     cpplint_result = models.TextField()
 
     def __unicode__(self):
@@ -24,6 +25,7 @@ class Email(models.Model):
     content = models.TextField()
     attachment_title = models.CharField(max_length=60)
     sent_at = models.CharField(max_length=80)
+    sent_at_parsed = models.DateTimeField(null=True)
     submission = models.ForeignKey(Submission, related_name='mails')
 
     def __unicode__(self):

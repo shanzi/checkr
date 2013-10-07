@@ -3,6 +3,6 @@ from assignment.views import assignments, assignment
 
 
 urlpatterns = patterns('',
-       url(r'^$', assignments),
-       url(r'^(\d+)$', assignment),
+       url(r'^$', assignments, name='assignments'),
+       url(r'^(\d+)$', assignment, name='assignment'),
        )

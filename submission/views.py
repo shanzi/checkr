@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django import forms
 from assignment.models import Assignment
@@ -52,3 +52,16 @@ def add(request):
             context_instance=RequestContext(request))
 
 
+@login_required
+def submission(request, id_):
+    submission = get_object_or_404(Submission, id=id_)
+    assignment = submission.assignment
+    student = submission.student
+    title = "%s - %s(%s)" % (assignment.title, student.name, student.student_num)
+    return render_to_response('submission.html',
+            {
+                'submission':submission,
+                'assignment':assignment,
+                'student':student,
+                'title':title,
+                })

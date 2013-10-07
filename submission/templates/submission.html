@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block extend_head %}
+    <style type="text/css" media="screen">
+th { text-align: left;background:#eee;}
+.email {
+    border: 1px solid #dfdfdf;
+    padding: 4px;
+    margin: 2px 0;
+    background:#efefef;
+}
+.email th { background:#ddd;}
+.email .content { 
+    margin:2px; padding:2px; background:#fff;border:solid 1px #eee;}
+    </style>
+{% endblock extend_head %}
+
+{% block content %}
+<table border="0" cellspacing="1" cellpadding="1" width="100%">
+<tr>
+    <th>姓名</th>
+    <th>学号</th>
+    <th>分数</th>
+    <th>最后提交时间</th>
+</tr>
+<tr>
+    <td>{{ student.name }}</td>
+    <td>{{ student.student_num }}</td>
+    <td>{{ submission.score }}</td>
+    <td>{{ submission.updated_at|date:"Y-m-d H:i" }}</td>
+</tr>
+</table>
+<hr>
+{% for email in submission.mails.all %}
+<div class="email">
+    <table border="0" cellspacing="2" cellpadding="2">
+        <tr>
+            <th>Subject</th>
+            <td>{{ email.subject }}</td>
+        </tr>
+        <tr>
+            <th>From</th>
+            <td>{{ email.fromaddr }}</td>
+        </tr>
+        <tr>
+            <th>Sent At</th>
+            <td>{{ email.sent_at_parsed|date:"Y-m-d H:i" }}</td>
+        </tr>
+    </table>
+    <div class="content">
+    {% if email.content %}
+        {{ email.content|safe }}
+    {% else %}
+    No Contents.
+    {% endif %}
+    </div>
+
+</div>
+{% empty %}
+<div class="info">No Emails</div>
+{% endfor %}
+{% endblock content %}

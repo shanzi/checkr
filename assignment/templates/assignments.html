@@ -22,7 +22,7 @@
 {% for assignment in assignments %}
 <div class="item">
     <h3>
-        <a href="{{ assignment.sequence }}">{{ assignment.title }}</a>
+        <a href="{% url 'assignment' assignment.sequence %}">{{ assignment.title }}</a>
     </h3>
 </div>
 <div class="detail">

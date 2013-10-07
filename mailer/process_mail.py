@@ -135,6 +135,23 @@ class Result(object):
             file_obj.submission = submission
             file_obj.save()
 
+    def _score(self, assignment):
+        deadline = assignment.deadline
+        parsed_date = self.message.parsed_date
+        if parsed_date:
+            if parsed_date <= deadline:
+                return 2
+            else:
+                return 1.5
+        else:
+            now =  datetime.now()
+            limit = now - timedelta(2)
+            if limit < deadline:
+                return 2
+            else:
+                return 1.5
+
+
     def _submit(self):
         print 'submitting: %s' % self.message.subject
         stu_num, seq, ext = self.attachment_name_split
@@ -148,7 +165,8 @@ class Result(object):
             submission = Submission()
             submission.student = student
             submission.assignment = assignment
-        submission.score = 2
+        submission.score = self._score(assignment)
+        submission.updated_at = self.message.sent_at_parsed or datetime.now()
         submission.save()
 
         self._save_email(submission)
@@ -254,7 +272,7 @@ def _process_message(uid, message):
 
 def process_mail():
     receiver = _mail_reciever()
-    date = datetime.now() - timedelta(20)
+    date = datetime.now() - timedelta(7)
     results = []
     with receiver:
         date_str = date.strftime('%d-%b-%Y')
@@ -274,6 +292,7 @@ def process_mail():
             elif result.error:
                 receiver.move(result.uid, settings.ERROR_MAILBOX)
 
+        results = []
         for uid, message in receiver.messages(folder=settings.WAIT_MAILBOX):
             print "processing:(%s) %s [wait box]" % (uid, message.subject,)
             res = _process_message(uid, message)

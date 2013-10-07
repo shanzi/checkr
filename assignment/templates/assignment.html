@@ -4,6 +4,7 @@
     <style type="text/css" media="screen">
     th { text-align: left; font-weight:bold;}
     .table-header {background:#EEE;}
+    .zero { background: #FFF497;}
     </style>
 {% endblock extend_head %}
 
@@ -21,17 +22,27 @@
        <th>查看提交</th>
        </tr>
        {% for student in students %}
+       {% if student.submission %}
        <tr>
            <td>{{ student.student_num }}</td>
            <td>{{ student.name }}</td>
            <td>{{ student.submission.score }}</td>
            <td>
-               <a href="#">&gt;&gt;</a>
+               <a href="{% url 'submission' student.submission.id %}">&gt;&gt;</a>
+           </td>
        </tr>
+       {% else %}
+       <tr class='zero' >
+           <td>{{ student.student_num }}</td>
+           <td>{{ student.name }}</td>
+           <td>0</td>
+           <td>未提交</td>
+       </tr>
+       {% endif %}
        {% endfor %}
    </table>
    {% if not forloop.last %}
    <hr>
    {% endif %}
-{% endfor %}
-{% endblock content %}
+   {% endfor %}
+   {% endblock content %}
