@@ -12,7 +12,19 @@ th { text-align: left;background:#eee;}
 .email th { background:#ddd;}
 .email .content { 
     margin:2px; padding:2px; background:#fff;border:solid 1px #eee;}
+pre.content{
+    white-space:pre-wrap;
+    word-wrap:break-word;
+}
+th.filepath{background:#A5D8A8;}
+.attachment pre{
+    overflow-x:scroll;
+    width:600px;
+}
     </style>
+<link rel="stylesheet" href="http://yandex.st/highlightjs/7.3/styles/tomorrow-night-eighties.min.css">
+<script src="http://yandex.st/highlightjs/7.3/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
 {% endblock extend_head %}
 
 {% block content %}
@@ -47,14 +59,31 @@ th { text-align: left;background:#eee;}
             <td>{{ email.sent_at_parsed|date:"Y-m-d H:i" }}</td>
         </tr>
     </table>
-    <div class="content">
+    <pre class="content">
     {% if email.content %}
-        {{ email.content|safe }}
+        {{ email.content }}
     {% else %}
     No Contents.
     {% endif %}
-    </div>
-
+    </pre>
+    <br>
+    {% if email.attachment_title %}
+    <table class="attachment" border='0' cellspacing='2' cellpadding='2'>
+        <tr>
+            <th>File Name:</th><td>{{ email.attachment_title }}</td>
+        </tr>
+        {% for file in email.files.all %}
+        <tr>
+            <th colspan="2" class="filepath">{{ file }}</th>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <pre><code class="cpp">{{ file.content }}</code></pre>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
 </div>
 {% empty %}
 <div class="info">No Emails</div>

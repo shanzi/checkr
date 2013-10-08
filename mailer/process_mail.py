@@ -2,6 +2,7 @@
 # encoding: utf-8
 
 import re
+import logging
 
 from mailer.imbox import Imbox
 from mailer.mailsender import MailSender
@@ -14,8 +15,13 @@ from student.models import Student
 
 import zipfile
 from mailer import rarfile
+from datetime import tzinfo
+
+from django.utils import timezone
+from html2text import html2text
 
 FILE_EXT_RE = re.compile(r'\.(h|cpp|cxx|c|txt)$')
+
 
 def _unicode(str_, encoding_list):
     if isinstance(str_, unicode): return str_
@@ -94,17 +100,23 @@ class Result(object):
 
     def _save_email(self, submission):
         message = self.message
-        email = Email()
-        email.fromaddr = ', '.join([addr['email'] for addr in self.message.sent_from])
-        email.toaddr = ', '.join([addr['email'] for addr in self.message.sent_to])
-        email.subject = self.message.subject or '(no subject)'
-        email.content = _unicode(
-                '\n\n'.join(self.message.body['plain'] or self.message.body['html']),
-                ['utf-8','gbk'])
-        email.attachment_title = self.attachment['filename']
-        email.sent_at = self.message.date
-        email.submission = submission
-        email.save()
+        try:
+            email = Email.objects.get(message_id=getattr(self.message,'message-id'))
+            return None
+        except Exception as e:
+            email = Email()
+            email.fromaddr = ', '.join([addr['email'] for addr in self.message.sent_from])
+            email.toaddr = ', '.join([addr['email'] for addr in self.message.sent_to])
+            email.subject = self.message.subject or '(no subject)'
+            email.content = html2text(_unicode(
+                    '\n\n'.join(self.message.body['plain'] or self.message.body['html']),
+                    ['utf-8','gbk']))
+            email.attachment_title = self.attachment['filename']
+            email.sent_at = self.message.date
+            email.submission = submission
+            email.message_id = getattr(self.message,'message-id')
+            email.save()
+            return email
 
     def _zip_files(self):
         zf = zipfile.ZipFile(self.attachment['content'],allowZip64=True)
@@ -119,20 +131,21 @@ class Result(object):
             if not info.isdir():
                 yield info.filename, rf.read(info)
 
-    def _save_files(self, submission, ext):
+    def _save_files(self, email, ext):
         if ext=='zip':
             files = self._zip_files()
         else:
             files = self._rar_files()
         for fname, content in files:
             if FILE_EXT_RE.search(fname):
-                content = _unicode(content, ['utf-8', 'gbk'])
+                content = _unicode(content, ['utf-8', 'gbk', 'gb2312', 'gb18030'])
             else:
                 content = '[No Preview]'
             file_obj = File()
-            file_obj.filename = _unicode(fname, ['utf-8', 'gbk'])
+            file_obj.filename = _unicode(fname, ['utf-8', 'gbk', 'gb2312', 'gb18030'])
             file_obj.content = content
-            file_obj.submission = submission
+            file_obj.email = email 
+            file_obj.submission = email.submission
             file_obj.save()
 
     def _score(self, assignment):
@@ -144,7 +157,7 @@ class Result(object):
             else:
                 return 1.5
         else:
-            now =  datetime.now()
+            now =  timezone.now()
             limit = now - timedelta(2)
             if limit < deadline:
                 return 2
@@ -166,13 +179,13 @@ class Result(object):
             submission.student = student
             submission.assignment = assignment
         submission.score = self._score(assignment)
-        submission.updated_at = self.message.sent_at_parsed or datetime.now()
+        submission.updated_at = self.message.parsed_date or datetime.now()
         submission.save()
 
-        self._save_email(submission)
+        email = self._save_email(submission)
 
         try:
-            self._save_files(submission, ext)
+            if email: self._save_files(email, ext)
         except zipfile.BadZipfile as e:
             self.badattachments = True
             raise e
@@ -188,7 +201,8 @@ class Result(object):
             return self._submit()
         except Exception as e:
             self.error = True
-            print 'error: [%s] %s' % (self.message, e)
+            logging.exception('error: [%s] %s' % (self.message, e))
+            
             return False
 
     def message(self):
@@ -267,6 +281,8 @@ def _process_message(uid, message):
     filename = attachment['filename']
 
     result.attachment_name_split = parse_attachments_name(filename)
+    if message.parsed_date:
+        message.parsed_date = timezone.make_aware(message.parsed_date, timezone.utc)
     return result
 
 

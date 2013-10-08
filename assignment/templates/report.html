@@ -1,0 +1,41 @@
+{% extends "base.html" %} 
+
+{% block extend_head %}
+    <style>
+.preview { border:1px solid #eee;padding:2px;}
+.info {text-align:center;}
+#to {width:634px;border:2px solid #ecc;height:1.5em; font-size:1em;}
+#submit {width:634px; background:#51D859; color:#fff; height:1.5em;
+    font-size:1em;border:1px solid #44B64B;}
+.sent { border:2px solid #FFED2E; padding:5px;margin:5px 0;}
+    </style>
+{% endblock extend_head %}
+
+{% block content %}
+{% if to %}
+    <div class="sent">
+    <b>成功发送邮件给接受者:</b>
+    <ul>
+        {% for t in to %}
+        <li>{{ t }}</li>
+        {% endfor %}
+    </ul>
+    </div>
+{% endif %}
+
+<div class="info">邮件预览</div>
+<div class="preview">
+    {% include "mails/report.html" %}
+</div>
+<hr>
+<form action="" method="POST" accept-charset="utf-8">
+    发送邮件报告到以下收件人:
+    <br>
+    <input placeholder="example1@example.com, example2@example.com" 
+    type="text" name="to" id="to" value="{{ receivers|join:", " }}"/>
+    {% csrf_token %}
+    <hr>
+    <input type="submit" id="submit" value="Send Mail" />
+</form>
+
+{% endblock content %}

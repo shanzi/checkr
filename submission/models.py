@@ -26,6 +26,7 @@ class Email(models.Model):
     attachment_title = models.CharField(max_length=60)
     sent_at = models.CharField(max_length=80)
     sent_at_parsed = models.DateTimeField(null=True)
+    message_id = models.CharField(max_length=80)
     submission = models.ForeignKey(Submission, related_name='mails')
 
     def __unicode__(self):
@@ -36,6 +37,7 @@ class File(models.Model):
     filename = models.CharField(max_length=200)
     content = models.TextField()
     submission = models.ForeignKey(Submission, related_name='files')
+    email = models.ForeignKey(Email, related_name='files')
 
     def __unicode__(self):
         return self.filename

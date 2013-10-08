@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>数据结构 {{ title }} 提交情况报告</title>
+</head>
+<body>
+<b>数据结构 {{ title }} 提交情况报告</b>
+<p>
+截止到{{now|date:'Y年m月d日G时'}}，{{ collections|length }}个班级共提交{{ title }}
+{{ sub_sum }}份(共{{ all_sum }}人)，未提交作业的人数为{{ zero_sum }}。
+</p>
+{% if collections %}
+<p>详细情况统计如下:</p>
+<table cellspacing="2" cellpadding="2">
+{% for students, sum, sub, zero  in collections %}
+    <tr>
+        <th style="text-align:left;background:#eee;">班级{{ forloop.counter }}</th>
+        <th style="text-align:left;background:#eee;">共{{ sum }}人</th>
+        <th style="text-align:left;background:#eee;">实交{{ sub }}人</th>
+        <th style="text-align:left;background:#eee;">未交{{ zero }}人</th>
+    </tr>
+    <tr>
+        <td colspan="4" style="text-align:center;">未交作业同学名单</td>
+    </tr>
+    <tr>
+        <th colspan="3" style="text-align:left;border-top:1px solid #ccc;border-bottom:1px solid #ccc;">学号</th>
+        <th colspan="1" style="text-align:left;border-top:1px solid #ccc;border-bottom:1px solid #ccc;">姓名</th>
+    </tr>
+    {% for student in students %}
+        <tr>
+            <td colspan="3">{{ student.student_num }}</td>
+            <td colspan="1">{{ student.name }}</td>
+        </tr>
+    {% empty %}
+    <tr>
+        <td colspan="2" style="text-align:center;">所有同学都提交了作业</td>
+    </tr>
+    {% endfor %}
+{% endfor %}
+</table>
+{% endif %}
+</body>
+</html>

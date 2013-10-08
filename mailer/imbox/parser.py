@@ -2,7 +2,6 @@ import re
 import StringIO
 import email
 import base64, quopri
-import time
 from datetime import datetime
 from email.header import Header, decode_header
 
@@ -151,7 +150,11 @@ def parse_email(raw_email):
                 'Value': value})
 
     if parsed_email.get('date'):
-        timetuple = email.utils.parsedate(parsed_email['date'])
-        parsed_email['parsed_date'] = datetime.fromtimestamp(time.mktime(timetuple)) if timetuple else None
+        timetuple = email.utils.parsedate_tz(parsed_email['date'])
+        if timetuple:
+            timestamp = email.utils.mktime_tz(timetuple)
+            parsed_email['parsed_date'] = datetime.utcfromtimestamp(timestamp)
+        else:
+            parsed_email['parsed_date'] = None
 
     return Struct(**parsed_email)
