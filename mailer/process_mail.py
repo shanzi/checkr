@@ -75,7 +75,6 @@ class Result(object):
             return
         str_ = subject + content + attachment_title
         match = re.search(ur'(\D|$)(\d{10})(\D|$)', str_, re.M)
-        if not subject: import pdb;pdb.set_trace()
         if match:
             groups = match.groups()
             stu_num = groups[1]
@@ -114,7 +113,10 @@ class Result(object):
             email.attachment_title = self.attachment['filename']
             email.sent_at = self.message.date
             email.submission = submission
-            email.message_id = getattr(self.message,'message-id')
+            if hasattr(self.message, 'message-id'):
+                email.message_id = getattr(self.message,'message-id')
+            else:
+                email.message_id=email.subject + email.sent_at
             email.save()
             return email
 
@@ -138,7 +140,10 @@ class Result(object):
             files = self._rar_files()
         for fname, content in files:
             if FILE_EXT_RE.search(fname):
-                content = _unicode(content, ['utf-8', 'gbk', 'gb2312', 'gb18030'])
+                try:
+                    content = _unicode(content, ['utf-8', 'gbk', 'gb2312', 'gb18030'])
+                except Exception as e:
+                    content = "[Encode Error]"
             else:
                 content = '[No Preview]'
             file_obj = File()
