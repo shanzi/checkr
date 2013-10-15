@@ -1,0 +1,42 @@
+<html lang="en">
+<body>
+<p style="font-weight:bold">{{ student_name }}:</p>
+<p>你好!</p>
+<p>你通过邮件发送过来的{{ assignment_title }}已经被成功接收。下面的表格中是你提交的作业信息，请确认。
+<table cellspacing="2" cellpadding="2" style="border-top:1px solid #000; border-bottom:1px solid #000" >
+    <tr>
+        <th style="background:#ccc;text-align:left;">姓名:</th>
+        <td>{{ student_name }}</td>
+        <th style="background:#ccc;text-align:left;">学号:</th>
+        <td>{{ student_num }}</td>
+    </tr>
+    <tr>
+        <th style="background:#ccc;text-align:left;">作业:</th>
+        <td colspan="3">{{ assignment_title }}</td>
+    </tr>
+    <tr>
+    <th style="background:#ccc;text-align:left;">附件名:</th>
+    <td colspan="3">{{ attachment_name }}</td>
+    </tr>
+    <tr>
+        <th colspan="4" style="background:#ccc;">文件:</th>
+    </tr>
+    {% for fn in filenames %}
+    <tr>
+        <td colspan="4">
+            {{ fn }}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+</p>
+{% if ext != "zip" %}
+<p>
+需要注意的是，你使用的是{{ ext }}格式的压缩文件发送附件，为避免出现各种解压问题，
+请改为使用使用“zip”格式压缩，方便我的作业检查工作。
+</p>
+<p style="color:#69f">这次的作业已经检查过，因此你不需要重新发送这次的作业。谢谢你的合作。</p>
+{% endif %}
+<p>如果有什么问题，欢迎通过邮件与我联系。</p>
+</body>
+</html>

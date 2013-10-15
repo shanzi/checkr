@@ -1,0 +1,45 @@
+<html lang="en">
+<body>
+<p style="font-weight:bold">{{ student_name|default:"同学" }}:</p>
+<p>你好！</p>
+<p>你通过邮件
+<span style="background:#eee;border:1px solid #ddd;padding:1px 2px;">
+    {{ received_mail_subject }}</span>
+发送过来的{{ assignment_title|default:"数据结构作业" }}存在问题，
+<span style="font-weight:bold;color:red;">你需要按照要求重新发送作业邮件。</span>
+</p>
+<p>
+作业存在的问题主要有：
+<ul>
+{% if badattachments %}
+<li>邮件的附件解压时出现错误，为安全起见请使用“zip”格式进行压缩</li>
+{% endif %}
+{% if not student_num %}
+<li>附件的格式不正确，为了方便整理，请使用“学号-作业次数.zip”的格式命名附件，
+其中作业次数是阿拉伯数字。</li>
+{% elif not seq %}
+<li>附件的格式不正确，为了方便整理，请使用“学号-作业次数.zip”的格式命名附件，
+其中作业次数是阿拉伯数字。如
+<span style="background:#eee;border:1px solid #ddd;padding:1px 2px;">
+    {{ student_num }}-1.zip</span> 
+</li>
+{% elif ext != "zip" %}
+<li>附件的格式不正确，为了方便整理，请使用“学号-作业次数.zip”的格式命名附件，
+其中作业次数是阿拉伯数字。为防止解压出错，请统一使用“zip”格式压缩，标准的附件名如
+<span style="background:#eee;border:1px solid #ddd;padding:1px 2px;">
+    {{ student_num }}-{{ seq }}.zip</span> 
+</li>
+{% endif %}
+{% if student_num and not student_title %}
+<li>
+你的学号
+<span style="background:#eee;border:1px solid #ddd;padding:1px 2px;">
+    {{ student_num }}</span>
+无法在名单中找到，请确认你提供的学号是正确的。
+</li>
+{% endif %}
+</ul>
+</p>
+<p style="color:red">请根据以上说明修改你的作业邮件并重新发送一遍。</p>
+</body>
+</html>

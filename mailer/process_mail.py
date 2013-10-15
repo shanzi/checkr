@@ -18,6 +18,7 @@ from mailer import rarfile
 from datetime import tzinfo
 
 from django.utils import timezone
+from django.template import Context, loader
 from html2text import html2text
 
 FILE_EXT_RE = re.compile(r'\.(h|cpp|cxx|c|txt)$')
@@ -41,6 +42,11 @@ class Result(object):
         self.overdeadline = False
         self.badattachments = False
         self.error = False
+        self.submitted = False
+        self.student_name = ''
+        self.assignment_title = ''
+        self.attachment_files = []
+        self.attachment_name = ''
         self.message = message
         self.uid = uid
 
@@ -61,6 +67,7 @@ class Result(object):
                 ['utf-8','gbk'])
         if self.attachment:
             attachment_title = self.attachment['filename']
+            self.attachment_name  = attachment_title
         else:
             return
         if re.search(r'\.zip"?$', attachment_title):
@@ -93,8 +100,7 @@ class Result(object):
                     seq = None
         else:
             seq = 1
-        if stu_num and seq and ext:
-            self.attachment_name_split = (stu_num, seq, ext)
+        self.attachment_name_split = (stu_num, seq, ext)
 
 
     def _save_email(self, submission):
@@ -124,7 +130,8 @@ class Result(object):
         zf = zipfile.ZipFile(self.attachment['content'],allowZip64=True)
         infolist = zf.infolist()
         for info in infolist:
-            yield info.filename, zf.read(info)
+            if not info.filename.endswith('/'):
+                yield info.filename, zf.read(info)
 
     def _rar_files(self):
         rf = rarfile.RarFile(self.attachment['content'])
@@ -138,6 +145,10 @@ class Result(object):
             files = self._zip_files()
         else:
             files = self._rar_files()
+        if not email:
+            self.attachment_files = [
+                    _unicode(fn, ['utf-8', 'gbk', 'gb2312', 'gb18030'])for fn, c in files]
+            return
         for fname, content in files:
             if FILE_EXT_RE.search(fname):
                 try:
@@ -152,6 +163,7 @@ class Result(object):
             file_obj.email = email 
             file_obj.submission = email.submission
             file_obj.save()
+            self.attachment_files.append(file_obj.filename)
 
     def _score(self, assignment):
         deadline = assignment.deadline
@@ -175,33 +187,40 @@ class Result(object):
         stu_num, seq, ext = self.attachment_name_split
         student = Student.objects.get(student_num=stu_num)
         assignment = Assignment.objects.get(sequence=seq)
+        self.student_name = student.name
+        self.assignment_title = assignment.title
         try:
             submission = Submission.objects.get(
                     student=student,
                     assignment=assignment)
+            submission.score = self._score(assignment)
         except Exception as e:
             submission = Submission()
             submission.student = student
             submission.assignment = assignment
-        submission.score = self._score(assignment)
-        submission.updated_at = self.message.parsed_date or datetime.now()
-        submission.save()
+            submission.score = self._score(assignment)
+            submission.updated_at = self.message.parsed_date or datetime.now()
+            submission.save()
 
         email = self._save_email(submission)
 
         try:
-            if email: self._save_files(email, ext)
+            self._save_files(email, ext)
+            submission.save()
+            return True
         except zipfile.BadZipfile as e:
             self.badattachments = True
             raise e
         except rarfile.BadRarFile as e:
             self.badattachments = True
             raise e
+        self.submitted = True
 
         return True
 
     def submit(self):
-        if not self.ok: return False
+        if not self.ok: 
+            return False
         try:
             return self._submit()
         except Exception as e:
@@ -210,9 +229,43 @@ class Result(object):
             
             return False
 
-    def message(self):
-        pass
+    def mail_message(self):
+        sn, seq, ext = self.attachment_name_split
+        toaddr = [addr['email'] for addr in self.message.sent_from]
+        fromaddr = settings.DEFAULT_SENDER
+        received_mail_subject = self.message.subject
+        subject = u"Re:" + received_mail_subject
+        student_name = self.student_name
+        assignment_title = self.assignment_title
+        if self.submitted or not self.error:
+            body_t = loader.get_template('mails/accepted.html')
+            body = body_t.render(Context({
+                'student_name':student_name,
+                'student_num':sn,
+                'assignment_title':assignment_title,
+                'received_mail_subject':received_mail_subject,
+                'attachment_name':self.attachment_name,
+                'ext':ext,
+                'filenames':self.attachment_files,
+                }))
+        else:
+            badattachments = self.badattachments
+            student_name = self.student_name
+            assignment_title = self.assignment_title
+            body_t = loader.get_template('mails/error.html')
+            body = body_t.render(Context({
+                'student_name':student_name,
+                'assignment_title':assignment_title,
+                'attachment_name':self.attachment_name,
+                'student_num':sn,
+                'seq':seq,
+                'ext':ext,
+                'received_mail_subject':received_mail_subject,
+                'badattachments':badattachments,
+                }))
+        return (subject, body, fromaddr, toaddr)
 
+            
 def _mail_reciever():
     receiver = settings.RECEIVER
     server = receiver['server']
@@ -285,7 +338,6 @@ def _process_message(uid, message):
 
     filename = attachment['filename']
 
-    result.attachment_name_split = parse_attachments_name(filename)
     if message.parsed_date:
         message.parsed_date = timezone.make_aware(message.parsed_date, timezone.utc)
     return result
@@ -295,6 +347,7 @@ def process_mail():
     receiver = _mail_reciever()
     date = datetime.now() - timedelta(7)
     results = []
+    mail_messages = []
     with receiver:
         date_str = date.strftime('%d-%b-%Y')
         for uid, message in receiver.messages(folder=settings.DEFAULT_MAILBOX,
@@ -309,9 +362,11 @@ def process_mail():
         receiver.connection.select()
         for result in results:
             ok = result.submit()
-            if ok: receiver.move(result.uid, settings.PROCESSED_MAILBOX)
+            if ok: 
+                receiver.move(result.uid, settings.PROCESSED_MAILBOX)
             elif result.error:
                 receiver.move(result.uid, settings.ERROR_MAILBOX)
+            mail_messages.append(result.mail_message())
 
         results = []
         for uid, message in receiver.messages(folder=settings.WAIT_MAILBOX):
@@ -322,6 +377,11 @@ def process_mail():
         receiver.connection.select(settings.WAIT_MAILBOX)
         for result in results:
             ok = result.submit()
-            if ok: receiver.move(result.uid, settings.PROCESSED_MAILBOX)
+            if ok:
+                receiver.move(result.uid, settings.PROCESSED_MAILBOX)
             elif result.error:
                 receiver.move(result.uid, settings.ERROR_MAILBOX)
+            mail_messages.append(result.mail_message())
+
+        sender = _mail_sender()
+        sender.send_mass_mail(mail_messages)

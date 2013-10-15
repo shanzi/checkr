@@ -22,4 +22,6 @@ class MailSender(object):
         msg.send()
 
     def send_mass_mail(self, messages):
-        send_mass_mail(messages)
+        for subject, body, from_, to in messages:
+            print "sending: <%s> to %s" % (subject, to) 
+            self.send_mail(subject, None, from_, to, html_message=body)
