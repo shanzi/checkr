@@ -6,8 +6,7 @@
 <body>
 <b>数据结构 {{ title }} 提交情况报告</b>
 <p>
-截止到{{now|date:'Y年m月d日G时'}}，{{ collections|length }}个班级共提交{{ title }}
-{{ sub_sum }}份(共{{ all_sum }}人)，未提交作业的人数为{{ zero_sum }}。
+截止到{{now|date:'Y年m月d日G时'}}，{{ collections|length }}个班级共提交{{ title }}{{ sub_sum }}份(共{{ all_sum }}人)，未提交作业的人数为{{ zero_sum }}。
 </p>
 {% if collections %}
 <p>详细情况统计如下:</p>
