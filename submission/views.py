@@ -2,6 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django import forms
+from django.utils import timezone
 from assignment.models import Assignment
 from student.models import Student
 from submission.models import Submission
@@ -40,6 +41,7 @@ def add(request):
             except Exception as e:
                 submission = Submission(student=student, assignment=assignment)
             submission.score = score 
+            submission.updated_at = timezone.now()
             submission.save()
             tip = 'submit: %s - %s' % (student.name, assignment.title)
     else:

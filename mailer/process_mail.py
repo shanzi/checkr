@@ -90,7 +90,7 @@ class Result(object):
                     num = seq_descriptions.index(num.encode('utf-8'))
                     seq = num + 1
                 except ValueError as e:
-                    seq = 1
+                    seq = None
         else:
             seq = 1
         if stu_num and seq and ext:
