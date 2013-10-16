@@ -70,6 +70,10 @@ class Result(object):
             self.attachment_name  = attachment_title
         else:
             return
+        r = parse_attachments_name(attachment_title)
+        if r:
+            self.attachment_name_split = r
+            return
         if re.search(r'\.zip"?$', attachment_title):
             ext = 'zip'
         elif re.search(r'\.rar"?$', attachment_title):
@@ -207,13 +211,13 @@ class Result(object):
         try:
             self._save_files(email, ext)
             submission.save()
-            return True
         except zipfile.BadZipfile as e:
             self.badattachments = True
             raise e
         except rarfile.BadRarFile as e:
             self.badattachments = True
             raise e
+
         self.submitted = True
 
         return True
@@ -230,14 +234,19 @@ class Result(object):
             return False
 
     def mail_message(self):
-        sn, seq, ext = self.attachment_name_split
+        if self.attachment_name_split:
+            sn, seq, ext = self.attachment_name_split
+        else:
+            sn, seq, ext = None, None, None
         toaddr = [addr['email'] for addr in self.message.sent_from]
+        # toaddr = [settings.DEFAULT_SENDER, ]
         fromaddr = settings.DEFAULT_SENDER
         received_mail_subject = self.message.subject
         subject = u"Re:" + received_mail_subject
         student_name = self.student_name
         assignment_title = self.assignment_title
-        if self.submitted or not self.error:
+        if self.submitted and not self.error:
+            is_reg_attachment_title = re.match(r'"?\d{10}(-|_)\d+\.\w{1,3}"?', self.attachment_name)
             body_t = loader.get_template('mails/accepted.html')
             body = body_t.render(Context({
                 'student_name':student_name,
@@ -246,7 +255,9 @@ class Result(object):
                 'received_mail_subject':received_mail_subject,
                 'attachment_name':self.attachment_name,
                 'ext':ext,
+                'seq':seq,
                 'filenames':self.attachment_files,
+                'is_reg_attachment_title':is_reg_attachment_title,
                 }))
         else:
             badattachments = self.badattachments
@@ -379,7 +390,7 @@ def process_mail():
             ok = result.submit()
             if ok:
                 receiver.move(result.uid, settings.PROCESSED_MAILBOX)
-            elif result.error:
+            else:
                 receiver.move(result.uid, settings.ERROR_MAILBOX)
             mail_messages.append(result.mail_message())
 

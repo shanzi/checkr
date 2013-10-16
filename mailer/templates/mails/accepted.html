@@ -33,9 +33,15 @@
 {% if ext != "zip" %}
 <p>
 需要注意的是，你使用的是{{ ext }}格式的压缩文件发送附件，为避免出现各种解压问题，
-请改为使用使用“zip”格式压缩，方便我的作业检查工作。
+下次提交作业时请改为使用使用“zip”格式压缩，方便我的作业检查工作。
 </p>
-<p style="color:#69f">这次的作业已经检查过，因此你不需要重新发送这次的作业。谢谢你的合作。</p>
+{% endif %}
+{% if not is_reg_attachment_title  %}
+<p>另外，你所发送的附件名称格式不正确，应该用横杠连接学号和作业次数（阿拉伯数字）作为附件名，即
+<span style="background:#eee;border:1px solid #ddd;padding:1px 2px;">
+    {{ student_num }}-{{ seq }}.zip</span>
+，请在下次发送时更正过来。
+</p>
 {% endif %}
 <p>如果有什么问题，欢迎通过邮件与我联系。</p>
 </body>
