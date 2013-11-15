@@ -61,7 +61,7 @@ class Result(object):
 
     def _detect_info(self):
         stu_num, seq, ext = None, None, None
-        subject = self.message.subject
+        subject = self.message.subject if hasattr(self.message, 'subject') else ''
         content = _unicode(
                 '\n\n'.join(self.message.body['plain'] or self.message.body['html']),
                 ['utf-8','gbk'])
@@ -116,7 +116,7 @@ class Result(object):
             email = Email()
             email.fromaddr = ', '.join([addr['email'] for addr in self.message.sent_from])
             email.toaddr = ', '.join([addr['email'] for addr in self.message.sent_to])
-            email.subject = self.message.subject or '(no subject)'
+            email.subject = self.message.subject if hasattr(self.message, 'subject') else '(no subject)'
             email.content = html2text(_unicode(
                     '\n\n'.join(self.message.body['plain'] or self.message.body['html']),
                     ['utf-8','gbk']))
@@ -187,7 +187,7 @@ class Result(object):
 
 
     def _submit(self):
-        print 'submitting: %s' % self.message.subject
+        print 'submitting: %s' % self.message.subject 
         stu_num, seq, ext = self.attachment_name_split
         student = Student.objects.get(student_num=stu_num)
         assignment = Assignment.objects.get(sequence=seq)
@@ -305,7 +305,7 @@ def _is_homework(message):
     if not message.attachments:
         return False
 
-    subject = _unicode(message.subject, ['utf-8', 'gbk'])
+    subject = _unicode(message.subject, ['utf-8', 'gbk']) if hasattr(message, 'subject') else ''
     content = message.body['plain'] or message.body['html']
     if content: 
         content = _unicode(content[0], ['utf-8', 'gbk'])
@@ -364,7 +364,8 @@ def process_mail():
         for uid, message in receiver.messages(folder=settings.DEFAULT_MAILBOX,
                 date__gt=date_str):
             ishw =  _is_homework(message)
-            print "processing:(%s) %s [%s]" % (uid, message.subject, ishw)
+            subject = message.subject if hasattr(message,'subject') else ''
+            print "processing:(%s) %s [%s]" % (uid, subject, ishw)
             if not ishw: continue
 
             res = _process_message(uid, message)
@@ -381,7 +382,8 @@ def process_mail():
 
         results = []
         for uid, message in receiver.messages(folder=settings.WAIT_MAILBOX):
-            print "processing:(%s) %s [wait box]" % (uid, message.subject,)
+            subject = message.subject if hasattr(message, 'subject') else ''
+            print "processing:(%s) %s [wait box]" % (uid, subject,)
             res = _process_message(uid, message)
             results.append(res)
 
