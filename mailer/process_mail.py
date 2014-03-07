@@ -15,7 +15,6 @@ from student.models import Student
 
 import zipfile
 from mailer import rarfile
-from datetime import tzinfo
 
 from django.utils import timezone
 from django.template import Context, loader
