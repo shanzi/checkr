@@ -84,7 +84,7 @@ class Result(object):
         else:
             return
         str_ = subject + content + attachment_title
-        match = re.search(ur'(\D|$)(\d{10})(\D|$)', str_, re.M)
+        match = re.search(ur'(\D|$)(\d{10}|[A-Za-z]\d{9})(\D|$)', str_, re.M)
         if match:
             groups = match.groups()
             stu_num = groups[1]
@@ -245,7 +245,7 @@ class Result(object):
         student_name = self.student_name
         assignment_title = self.assignment_title
         if self.submitted and not self.error:
-            is_reg_attachment_title = re.match(r'"?\d{10}(-|_)\d+\.\w{1,3}"?', self.attachment_name)
+            is_reg_attachment_title = re.match(r'"?(\d{10}|[A-Za-z]\d{9})(-|_)\d+\.\w{1,3}"?', self.attachment_name)
             body_t = loader.get_template('mails/accepted.html')
             body = body_t.render(Context({
                 'student_name':student_name,
@@ -321,20 +321,20 @@ def _is_homework(message):
         attachment = message.attachments[0]
         if attachment:
             filename = attachment['filename']
-            if re.match(r'^"?\[?(\d{10})\]?[-_]\[?(\d+)\]?\.(zip|rar)"?$', filename): score *= 0.4
+            if re.match(r'^"?\[?(\d{10}|[A-Za-z]\d{9})\]?[-_]\[?(\d+)\]?\.(zip|rar)"?$', filename): score *= 0.4
 
 
     return score < 0.5
 
 def parse_attachments_name(name):
     name = name.strip()
-    match = re.match(r'^"?\[?(\d{10})\]?[-_]\[?(\d+)\]?\.(zip|rar)"?$', name)
+    match = re.match(r'^"?\[?(\d{10}|[A-Za-z]\d{9})\]?[-_]\[?(\d+)\]?\.(zip|rar)"?$', name)
     if match: return match.groups()
-    match = re.match(r'^"?(\d)[-_](\d{10})\.(zip|rar)"?$', name) 
+    match = re.match(r'^"?(\d)[-_](\d{10}|[A-Za-z]\d{9})\.(zip|rar)"?$', name) 
     if match:
         seq, stn, ext = match.groups()
         return (stn, seq, ext)
-    match = re.match(r'^"?(\d{10})[-_+]?(ch|chapter)\.?(\d)"?$', name)
+    match = re.match(r'^"?(\d{10}|[A-Za-z]\d{9})[-_+]?(ch|chapter)\.?(\d)"?$', name)
     if match:
         sn, _, seq, ext = match.groups()
         return (sn, seq, ext)
