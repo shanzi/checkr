@@ -24,8 +24,17 @@ class Command(BaseCommand):
     def handle(self, start_date, *args, **kwargs):
         for i, lst in enumerate(NAME_LIST):
             for k, v in lst.iteritems():
-                stu, created = Student.objects.get_or_create(student_num=k,
-                        name=unicode(v,'utf-8'), collection=i)
+                try:
+                    stu = Student.objects.get(student_num=k)
+                    if stu:
+                        stu.name = unicode(v,'utf-8')
+                        stu.collection = i
+                        stu.save()
+                except Exception, e:
+                    stu = Student.objects.create(
+                            student_num=k,
+                            name=unicode(v,'utf-8'),
+                            collection=i)
                 print 'created %s (%s) - %s' % (stu.name, stu.student_num, stu.collection)
         if start_date:
             start_date = datetime.strptime(start_date, '%Y-%m-%d')
@@ -34,8 +43,8 @@ class Command(BaseCommand):
             for n, w in enumerate(seq_descriptions, 1):
                 Assignment.objects.create(
                         sequence = n,
-                        title = '第%s作业' % w,
-                        description = '数据结构第%s作业' % w,
+                        title = '第%s次作业' % w,
+                        description = '数据结构第%s次作业' % w,
                         deadline = deadline, 
                         )
                 print 'Added assignment at deadline %s' % deadline.strftime('%Y-%m-%d %H:%M')

@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.template import RequestContext, Context, loader
 from mailer.mail_settings import DEFAULT_SENDER, DEFAULT_RECEIVERS
 
-collections = [0, 1]
+collections = [0, 1, 2]
 
 def assignments(request):
     assignments = Assignment.objects.all()
