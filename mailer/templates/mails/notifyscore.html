@@ -8,57 +8,25 @@
 如果有认识的同学当中有人没有收到这封邮件，请通知他们尽快与我邮件联系。
 </p>
 <p style="font-weight:bold">你的学号是
-<span style="color:#69f;">{{ student.student_num }}</span>。作业评分情况如下:
+<span style="color:#69f;">{{ student.student_num }}</span>。作业提交情况如下:
 </p>
 <p>
 <table>
     <tr>
         <th style="background:#ccc;">作业序号</th>
-        <th style="background:#ccc;">作业成绩(满分2.0)</th>
+        <th style="background:#ccc;">作业提交情况</th>
     </tr>
     {% for result in results %}
     <tr>
         <td>{{ forloop.counter }}</td>
         {% if result == 0 %}
-        <td style="color:#fff;background:#f63">0.0 (未提交)</td>
+        <td style="color:#fff;background:#f63">未提交</td>
         {% else %}
-        <td>{{ result|floatformat:1 }}</td>
+        <td>OK</td>
         {% endif %}
     </tr>
     {% endfor %}
-    <tr>
-        <td style="background:#ccc;font-weight:bold">共计</td>
-        <td style="background:#ccc;font-weight:bold">{{ results_sum }}</td>
-    </tr>
 </table>
-</p>
-<p>
-每次作业满分为
-<span style="color:red">2.0</span>
-分，作业评分综合考虑了以下几个点：
-<ul>
-    <li>作业的完成情况</li>
-    <li>代码编写的规范程度</li>
-    <li>作业的提交时间（超期会被罚分）</li>
-</ul>
-</p>
-<p>
-作业评分的尺度已经很松了，只要提交过作业都会在1.5分左右，因此不接受评分尺度上的疑问。如果你有某次
-作业评分为零分，表明你当次作业未提交或者我这边并没有正确接收到，请尽快提交或联系我。
-</p>
-<p>
-在评阅作业的时候发现很多同学的代码规范程度并不好，在这里推荐了解下
-<a href="http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml">Google C++ Style Guide</a>。
-评分过程中针对代码编写规范的罚分就是以这个为标准进行的。其中评分为满分并不意味着当次作业完全达到了
-代码规范的要求，希望大家多重视代码规范这方面的问题。
-</p>
-<p>
-此外，大多数同学使用的是 Visual Studio 2010 及以上版本作为编程环境，还有一部分同学使用 Visual C++ 6.0 这种
-多年前的版本，如果没有特殊的原因（如需要进行某些嵌入式开发或开发针对旧系统的的软件），本人建议你换用新的
-编程环境。<b style="color:#369"> 在作业评分中，如果使用的是Linux环境以及使用g++或clang编译器的，在评分上会更高。</b>
-</p>
-<p>
-感谢各位同学对本人工作的支持，在课程结束仍然欢迎各位通过邮件与我联系和交流。
 </p>
 </body>
 </html>
