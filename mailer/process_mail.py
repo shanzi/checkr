@@ -23,7 +23,7 @@ from html2text import html2text
 FILE_EXT_RE = re.compile(r'\.(h|cpp|cxx|c|txt)$')
 
 
-def _unicode(str_, encoding_list):
+def _unicode(str_, encoding_list=('utf8','gbk','gb2312', 'gb18030', 'big5')):
     if isinstance(str_, unicode): return str_
     for encoding in encoding_list:
         try:
@@ -63,7 +63,7 @@ class Result(object):
         subject = self.message.subject if hasattr(self.message, 'subject') else ''
         content = _unicode(
                 '\n\n'.join(self.message.body['plain'] or self.message.body['html']),
-                ['utf-8','gbk'])
+                )
         if self.attachment:
             attachment_title = self.attachment['filename']
             self.attachment_name  = attachment_title
@@ -118,7 +118,7 @@ class Result(object):
             email.subject = self.message.subject if hasattr(self.message, 'subject') else '(no subject)'
             email.content = html2text(_unicode(
                     '\n\n'.join(self.message.body['plain'] or self.message.body['html']),
-                    ['utf-8','gbk']))
+                    ))
             email.attachment_title = self.attachment['filename']
             email.sent_at = self.message.date
             email.submission = submission
@@ -150,18 +150,18 @@ class Result(object):
             files = self._rar_files()
         if not email:
             self.attachment_files = [
-                    _unicode(fn, ['utf-8', 'gbk', 'gb2312', 'gb18030'])for fn, c in files]
+                    _unicode(fn)for fn, c in files]
             return
         for fname, content in files:
             if FILE_EXT_RE.search(fname):
                 try:
-                    content = _unicode(content, ['utf-8', 'gbk', 'gb2312', 'gb18030'])
+                    content = _unicode(content)
                 except Exception as e:
                     content = "[Encode Error]"
             else:
                 content = '[No Preview]'
             file_obj = File()
-            file_obj.filename = _unicode(fname, ['utf-8', 'gbk', 'gb2312', 'gb18030'])
+            file_obj.filename = _unicode(fname)
             file_obj.content = content
             file_obj.email = email 
             file_obj.submission = email.submission
@@ -304,10 +304,10 @@ def _is_homework(message):
     if not message.attachments:
         return False
 
-    subject = _unicode(message.subject, ['utf-8', 'gbk']) if hasattr(message, 'subject') else ''
+    subject = _unicode(message.subject) if hasattr(message, 'subject') else ''
     content = message.body['plain'] or message.body['html']
     if content: 
-        content = _unicode(content[0], ['utf-8', 'gbk'])
+        content = _unicode(content[0])
     else:
         content = u''
 

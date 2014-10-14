@@ -53,7 +53,7 @@ def decode_param(param):
     values = v.split('\n')
     value_results = []
     for value in values:
-        match = re.search(r'=\?(\w+)\?(Q|B)\?(.+)\?=', value)
+        match = re.search(r'=\?([^\?]+)\?(Q|B)\?(.+)\?=', value)
         if match:
             encoding, type_, code = match.groups()
             if type_ == 'Q':
@@ -84,7 +84,10 @@ def parse_attachment(message_part):
             for param in dispositions[1:]:
                 name, value = decode_param(param)
 
-                if 'file' in  name:
+                if 'file' in name: 
+                    attachment['filename'] = value
+
+                elif 'name' in name:
                     attachment['filename'] = value
                 
                 if 'create-date' in name:
